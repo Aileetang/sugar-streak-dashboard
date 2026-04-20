@@ -139,16 +139,57 @@ main {
     margin-bottom: 20px;
 }
 
-.calendar-section h2 {
-    margin-bottom: 15px;
-    color: #333;
-    font-size: 1.1em;
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
 }
 
-.calendar {
+.calendar-header h2 {
+    font-size: 1.3em;
+    color: #333;
+    min-width: 150px;
+    text-align: center;
+}
+
+.nav-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.nav-btn:active {
+    transform: scale(0.95);
+}
+
+/* Calendar Weekdays */
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.weekday {
+    font-weight: 700;
+    color: #667eea;
+    font-size: 0.85em;
+    padding: 10px 0;
+}
+
+/* Calendar Days Grid */
+.calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 8px;
+    margin-bottom: 20px;
 }
 
 .day-cell {
@@ -158,9 +199,13 @@ main {
     justify-content: center;
     border-radius: 10px;
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1.1em;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+    background: #e0e0e0;
+    color: #999;
 }
 
 .day-cell:active {
@@ -170,16 +215,63 @@ main {
 .day-success {
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     color: white;
+    font-weight: bold;
 }
 
 .day-failed {
     background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
     color: white;
+    font-weight: bold;
 }
 
-.day-empty {
-    background: #e0e0e0;
-    color: #999;
+.day-other-month {
+    background: #f0f0f0;
+    color: #bbb;
+    opacity: 0.5;
+}
+
+.day-today {
+    border-color: #667eea;
+    border-width: 2px;
+}
+
+/* Month Stats */
+.month-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    border-top: 2px solid #eee;
+    margin-top: 15px;
+}
+
+.month-stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.stat-icon {
+    font-size: 1.8em;
+    color: #38ef7d;
+}
+
+.stat-icon.fail {
+    color: #ff6a00;
+}
+
+.stat-name {
+    font-size: 0.85em;
+    color: #666;
+    font-weight: 600;
+}
+
+.stat-num {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #333;
 }
 
 /* Reset Section */
@@ -230,4 +322,12 @@ footer {
         padding: 15px 10px;
         font-size: 0.9em;
     }
-}
+
+    .calendar-header h2 {
+        font-size: 1.1em;
+    }
+
+    .day-cell {
+        font-size: 0.95em;
+    }
+            }
