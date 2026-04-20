@@ -5,10 +5,18 @@ const totalDaysEl = document.getElementById('totalDays');
 const addDayBtn = document.getElementById('addDayBtn');
 const oopsBtn = document.getElementById('oopsBtn');
 const resetBtn = document.getElementById('resetBtn');
-const calendarEl = document.getElementById('calendar');
+const calendarDaysEl = document.getElementById('calendarDays');
+const monthYearEl = document.getElementById('monthYear');
+const prevMonthBtn = document.getElementById('prevMonth');
+const nextMonthBtn = document.getElementById('nextMonth');
+const monthSuccessEl = document.getElementById('monthSuccess');
+const monthFailedEl = document.getElementById('monthFailed');
 
 // LocalStorage keys
 const STORAGE_KEY = 'sugarStreak';
+
+// Current month being displayed
+let displayMonth = new Date();
 
 // Initialize data structure
 const initializeData = () => {
@@ -38,10 +46,15 @@ const getTodayDate = () => {
     return today.toISOString().split('T')[0];
 };
 
+// Check if entry exists for a date
+const getEntryForDate = (data, dateStr) => {
+    return data.history.find(entry => entry.date === dateStr);
+};
+
 // Check if entry exists for today
 const hasEntryToday = (data) => {
     const today = getTodayDate();
-    return data.history.some(entry => entry.date === today);
+    return getEntryForDate(data, today) !== undefined;
 };
 
 // Add a sugar-free day
@@ -68,11 +81,6 @@ const addDay = () => {
         status: 'success'
     });
 
-    // Keep only last 35 days
-    if (data.history.length > 35) {
-        data.history.shift();
-    }
-
     saveData(data);
     updateUI();
 
@@ -98,11 +106,6 @@ const logOops = () => {
         date: today,
         status: 'failed'
     });
-
-    // Keep only last 35 days
-    if (data.history.length > 35) {
-        data.history.shift();
-    }
 
     saveData(data);
     updateUI();
@@ -133,25 +136,60 @@ const updateUI = () => {
     updateCalendar(data);
 };
 
+// Get days in month
+const getDaysInMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+};
+
+// Get first day of month (0 = Sunday)
+const getFirstDayOfMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+};
+
+// Format date as YYYY-MM-DD
+const formatDate = (year, month, day) => {
+    const m = String(month + 1).padStart(2, '0');
+    const d = String(day).padStart(2, '0');
+    return `${year}-${m}-${d}`;
+};
+
 // Update calendar display
 const updateCalendar = (data) => {
-    calendarEl.innerHTML = '';
+    calendarDaysEl.innerHTML = '';
 
-    // Create array of 35 days
-    const today = new Date();
-    const days = [];
+    const year = displayMonth.getFullYear();
+    const month = displayMonth.getMonth();
+    const daysInMonth = getDaysInMonth(displayMonth);
+    const firstDay = getFirstDayOfMonth(displayMonth);
 
-    for (let i = 34; i >= 0; i--) {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        days.push(date.toISOString().split('T')[0]);
+    // Update month/year header
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    monthYearEl.textContent = `${monthNames[month]} ${year}`;
+
+    // Get today's date
+    const today = getTodayDate();
+
+    // Add empty cells for days before month starts
+    for (let i = 0; i < firstDay; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'day-cell day-other-month';
+        cell.textContent = '';
+        calendarDaysEl.appendChild(cell);
     }
 
-    // Render days
-    days.forEach(dateStr => {
-        const entry = data.history.find(h => h.date === dateStr);
+    // Add days of month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = formatDate(year, month, day);
+        const entry = getEntryForDate(data, dateStr);
+
         const cell = document.createElement('div');
         cell.className = 'day-cell';
+
+        // Highlight today
+        if (dateStr === today) {
+            cell.classList.add('day-today');
+        }
 
         if (entry) {
             if (entry.status === 'success') {
@@ -162,12 +200,47 @@ const updateCalendar = (data) => {
                 cell.textContent = '✗';
             }
         } else {
-            cell.classList.add('day-empty');
-            cell.textContent = '-';
+            cell.textContent = day;
+            cell.style.color = '#999';
         }
 
-        calendarEl.appendChild(cell);
-    });
+        calendarDaysEl.appendChild(cell);
+    }
+
+    // Update month stats
+    updateMonthStats(data, year, month);
+};
+
+// Update month stats
+const updateMonthStats = (data, year, month) => {
+    const daysInMonth = getDaysInMonth(new Date(year, month));
+    let success = 0;
+    let failed = 0;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = formatDate(year, month, day);
+        const entry = getEntryForDate(data, dateStr);
+
+        if (entry) {
+            if (entry.status === 'success') success++;
+            else failed++;
+        }
+    }
+
+    monthSuccessEl.textContent = success;
+    monthFailedEl.textContent = failed;
+};
+
+// Navigate to previous month
+const prevMonth = () => {
+    displayMonth.setMonth(displayMonth.getMonth() - 1);
+    updateUI();
+};
+
+// Navigate to next month
+const nextMonth = () => {
+    displayMonth.setMonth(displayMonth.getMonth() + 1);
+    updateUI();
 };
 
 // Show temporary message
@@ -228,6 +301,8 @@ document.head.appendChild(style);
 addDayBtn.addEventListener('click', addDay);
 oopsBtn.addEventListener('click', logOops);
 resetBtn.addEventListener('click', resetAll);
+prevMonthBtn.addEventListener('click', prevMonth);
+nextMonthBtn.addEventListener('click', nextMonth);
 
 // Initial UI update
 updateUI();
