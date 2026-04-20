@@ -45,38 +45,41 @@
 
             <!-- Calendar Section -->
             <section class="calendar-section">
-                <h2>📅 Last 35 Days</h2>
-                <div class="calendar" id="calendar"></div>
-            </section>
+                <div class="calendar-header">
+                    <button id="prevMonth" class="nav-btn">◀</button>
+                    <h2 id="monthYear"></h2>
+                    <button id="nextMonth" class="nav-btn">▶</button>
+                </div>
+                
+                <div class="calendar-weekdays">
+                    <div class="weekday">Sun</div>
+                    <div class="weekday">Mon</div>
+                    <div class="weekday">Tue</div>
+                    <div class="weekday">Wed</div>
+                    <div class="weekday">Thu</div>
+                    <div class="weekday">Fri</div>
+                    <div class="weekday">Sat</div>
+                </div>
 
-            <!-- Reset Button -->
-            <div class="reset-section">
-                <button id="resetBtn" class="btn btn-reset">
-                    🔄 Reset All Data
-                </button>
-            </div>
-        </main>
+                <div class="calendar-days" id="calendarDays"></div>
 
-        <footer>
-            <p>💪 Stay strong! You've got this!</p>
-        </footer>
-    </div>
-
-    <script src="app.js"></script>
-</body>
-</html>            <div class="button-group">
-                <button id="addDayBtn" class="btn btn-success">
-                    ✅ Add Sugar-Free Day
-                </button>
-                <button id="oopsBtn" class="btn btn-danger">
-                    😅 Oops! (Drank Sugar)
-                </button>
-            </div>
-
-            <!-- Calendar Section -->
-            <section class="calendar-section">
-                <h2>📅 Last 35 Days</h2>
-                <div class="calendar" id="calendar"></div>
+                <!-- Month Stats -->
+                <div class="month-stats">
+                    <div class="month-stat">
+                        <span class="stat-icon">✓</span>
+                        <div>
+                            <div class="stat-name">Sugar-Free Days</div>
+                            <div class="stat-num" id="monthSuccess">0</div>
+                        </div>
+                    </div>
+                    <div class="month-stat">
+                        <span class="stat-icon fail">✗</span>
+                        <div>
+                            <div class="stat-name">Days with Sugar</div>
+                            <div class="stat-num" id="monthFailed">0</div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
             <!-- Reset Button -->
