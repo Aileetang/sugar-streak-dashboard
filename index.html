@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍬 Sugar Streak Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍬 Sugar Streak</h1>
+            <p>Track your sugar-free journey</p>
+        </header>
+
+        <main>
+            <!-- Stats Section -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Current Streak</div>
+                    <div class="stat-value" id="currentStreak">0</div>
+                    <div class="stat-unit">days</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Best Streak</div>
+                    <div class="stat-value" id="bestStreak">0</div>
+                    <div class="stat-unit">days</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Tracked</div>
+                    <div class="stat-value" id="totalDays">0</div>
+                    <div class="stat-unit">days</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button id="addDayBtn" class="btn btn-success">
+                    ✅ Add Sugar-Free Day
+                </button>
+                <button id="oopsBtn" class="btn btn-danger">
+                    😅 Oops! (Drank Sugar)
+                </button>
+            </div>
+
+            <!-- Calendar Section -->
+            <section class="calendar-section">
+                <h2>📅 Last 35 Days</h2>
+                <div class="calendar" id="calendar"></div>
+            </section>
+
+            <!-- Reset Button -->
+            <div class="reset-section">
+                <button id="resetBtn" class="btn btn-reset">
+                    🔄 Reset All Data
+                </button>
+            </div>
+        </main>
+
+        <footer>
+            <p>💪 Stay strong! You've got this!</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
