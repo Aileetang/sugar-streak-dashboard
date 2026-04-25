@@ -12,11 +12,20 @@ const nextMonthBtn = document.getElementById('nextMonth');
 const monthSuccessEl = document.getElementById('monthSuccess');
 const monthFailedEl = document.getElementById('monthFailed');
 
+// Modal elements
+const dateModal = document.getElementById('dateModal');
+const closeModalBtn = document.getElementById('closeModal');
+const modalDateEl = document.getElementById('modalDate');
+const modalSuccessBtn = document.getElementById('modalSuccess');
+const modalFailedBtn = document.getElementById('modalFailed');
+const modalClearBtn = document.getElementById('modalClear');
+
 // LocalStorage keys
 const STORAGE_KEY = 'sugarStreak';
 
 // Current month being displayed
 let displayMonth = new Date();
+let selectedDate = null;
 
 // Initialize data structure
 const initializeData = () => {
@@ -57,6 +66,55 @@ const hasEntryToday = (data) => {
     return getEntryForDate(data, today) !== undefined;
 };
 
+// Recalculate streak from history
+const recalculateStreak = (data) => {
+    if (data.history.length === 0) {
+        data.currentStreak = 0;
+        data.totalDays = 0;
+        return;
+    }
+
+    // Sort history by date
+    const sorted = [...data.history].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    // Find longest streak
+    let bestStreak = 0;
+    let currentStreak = 0;
+
+    for (let i = 0; i < sorted.length; i++) {
+        if (sorted[i].status === 'success') {
+            currentStreak++;
+            if (currentStreak > bestStreak) {
+                bestStreak = currentStreak;
+            }
+        } else {
+            currentStreak = 0;
+        }
+    }
+
+    // Calculate current streak (from today backwards)
+    const today = getTodayDate();
+    let streak = 0;
+    let checkDate = new Date(today);
+
+    for (let i = 0; i < 365; i++) {
+        const dateStr = checkDate.toISOString().split('T')[0];
+        const entry = getEntryForDate(data, dateStr);
+
+        if (entry && entry.status === 'success') {
+            streak++;
+        } else {
+            break;
+        }
+
+        checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    data.currentStreak = streak;
+    data.bestStreak = bestStreak;
+    data.totalDays = sorted.length;
+};
+
 // Add a sugar-free day
 const addDay = () => {
     const data = getData();
@@ -67,24 +125,15 @@ const addDay = () => {
         return;
     }
 
-    data.currentStreak += 1;
-    data.totalDays += 1;
-
-    // Update best streak
-    if (data.currentStreak > data.bestStreak) {
-        data.bestStreak = data.currentStreak;
-    }
-
-    // Add to history
     data.history.push({
         date: today,
         status: 'success'
     });
 
+    recalculateStreak(data);
     saveData(data);
     updateUI();
 
-    // Celebration message
     showMessage(`🎉 Great! ${data.currentStreak} day streak!`);
 };
 
@@ -98,20 +147,109 @@ const logOops = () => {
         return;
     }
 
-    data.currentStreak = 0; // Reset streak
-    data.totalDays += 1;
-
-    // Add to history
     data.history.push({
         date: today,
         status: 'failed'
     });
 
+    recalculateStreak(data);
     saveData(data);
     updateUI();
 
-    // Encouraging message
-    showMessage(`😔 Streak reset to 0. But you got this! Start fresh today!`);
+    showMessage(`😔 Streak reset. But you got this! Start fresh today!`);
+};
+
+// Handle date click
+const handleDateClick = (dateStr) => {
+    // Don't allow clicking dates from other months
+    const [year, month, day] = dateStr.split('-');
+    if (parseInt(month) !== displayMonth.getMonth() + 1 || parseInt(year) !== displayMonth.getFullYear()) {
+        return;
+    }
+
+    selectedDate = dateStr;
+    const data = getData();
+    const entry = getEntryForDate(data, dateStr);
+
+    // Format date for display
+    const dateObj = new Date(dateStr);
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                        'July', 'August', 'September', 'October', 'November', 'December'];
+    const displayText = `${monthNames[dateObj.getMonth()]} ${dateObj.getDate()}, ${dateObj.getFullYear()}`;
+    
+    modalDateEl.textContent = displayText;
+
+    // Update button states
+    modalSuccessBtn.classList.remove('selected');
+    modalFailedBtn.classList.remove('selected');
+    modalClearBtn.classList.remove('selected');
+
+    if (entry) {
+        if (entry.status === 'success') {
+            modalSuccessBtn.classList.add('selected');
+        } else {
+            modalFailedBtn.classList.add('selected');
+        }
+    }
+
+    dateModal.classList.add('active');
+};
+
+// Modal button handlers
+const handleModalSuccess = () => {
+    const data = getData();
+    const entry = getEntryForDate(data, selectedDate);
+
+    if (entry) {
+        entry.status = 'success';
+    } else {
+        data.history.push({
+            date: selectedDate,
+            status: 'success'
+        });
+    }
+
+    recalculateStreak(data);
+    saveData(data);
+    closeModal();
+    updateUI();
+    showMessage('✅ Marked as sugar-free!');
+};
+
+const handleModalFailed = () => {
+    const data = getData();
+    const entry = getEntryForDate(data, selectedDate);
+
+    if (entry) {
+        entry.status = 'failed';
+    } else {
+        data.history.push({
+            date: selectedDate,
+            status: 'failed'
+        });
+    }
+
+    recalculateStreak(data);
+    saveData(data);
+    closeModal();
+    updateUI();
+    showMessage('😅 Marked as drank sugar!');
+};
+
+const handleModalClear = () => {
+    const data = getData();
+    data.history = data.history.filter(entry => entry.date !== selectedDate);
+
+    recalculateStreak(data);
+    saveData(data);
+    closeModal();
+    updateUI();
+    showMessage('🗑️ Entry cleared!');
+};
+
+const closeModal = () => {
+    dateModal.classList.remove('active');
+    selectedDate = null;
 };
 
 // Reset all data
@@ -185,6 +323,7 @@ const updateCalendar = (data) => {
 
         const cell = document.createElement('div');
         cell.className = 'day-cell';
+        cell.dataset.date = dateStr;
 
         // Highlight today
         if (dateStr === today) {
@@ -204,6 +343,7 @@ const updateCalendar = (data) => {
             cell.style.color = '#999';
         }
 
+        cell.addEventListener('click', () => handleDateClick(dateStr));
         calendarDaysEl.appendChild(cell);
     }
 
@@ -256,7 +396,7 @@ const showMessage = (message) => {
         padding: 15px 25px;
         border-radius: 10px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
+        z-index: 999;
         font-weight: 600;
         animation: slideDown 0.3s ease;
     `;
@@ -265,37 +405,10 @@ const showMessage = (message) => {
     document.body.appendChild(messageEl);
 
     setTimeout(() => {
-        messageEl.style.animation = 'slideUp 0.3s ease';
+        messageEl.style.animation = 'slideUpMsg 0.3s ease';
         setTimeout(() => messageEl.remove(), 300);
     }, 2000);
 };
-
-// Add animation styles
-const style = document.createElement('style');
-style.innerHTML = `
-    @keyframes slideDown {
-        from {
-            transform: translateX(-50%) translateY(-100px);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes slideUp {
-        from {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(-50%) translateY(-100px);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
 
 // Event listeners
 addDayBtn.addEventListener('click', addDay);
@@ -303,6 +416,19 @@ oopsBtn.addEventListener('click', logOops);
 resetBtn.addEventListener('click', resetAll);
 prevMonthBtn.addEventListener('click', prevMonth);
 nextMonthBtn.addEventListener('click', nextMonth);
+
+// Modal event listeners
+closeModalBtn.addEventListener('click', closeModal);
+modalSuccessBtn.addEventListener('click', handleModalSuccess);
+modalFailedBtn.addEventListener('click', handleModalFailed);
+modalClearBtn.addEventListener('click', handleModalClear);
+
+// Close modal on outside click
+dateModal.addEventListener('click', (e) => {
+    if (e.target === dateModal) {
+        closeModal();
+    }
+});
 
 // Initial UI update
 updateUI();
