@@ -80,7 +80,29 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="calendar-hint">
+                    <p>💡 Click any date to add/remove from that day</p>
+                </div>
             </section>
+
+            <!-- Date Picker Modal -->
+            <div id="dateModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 id="modalDate"></h3>
+                        <button id="closeModal" class="close-btn">✕</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>What did you do on this day?</p>
+                    </div>
+                    <div class="modal-buttons">
+                        <button id="modalSuccess" class="btn btn-success">✅ No Sugar</button>
+                        <button id="modalFailed" class="btn btn-danger">😅 Drank Sugar</button>
+                        <button id="modalClear" class="btn btn-clear">🗑️ Clear</button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Reset Button -->
             <div class="reset-section">
